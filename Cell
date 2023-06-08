@@ -1,0 +1,90 @@
+public class Cell {
+    
+    private boolean isMine;
+    private boolean isCovered;
+    private boolean isFlagged;
+    private int adjacentMines;
+    private boolean isSafe;
+
+    public Cell() 
+  {
+        isMine = false;
+        isCovered = true;
+        isFlagged = false;
+        adjacentMines = 0;
+    }
+
+    public boolean isMine() 
+  {
+        return isMine;
+    }
+
+    public void setMine() 
+  {
+        isMine = true;
+    }
+
+    public boolean isCovered() 
+  {
+        return isCovered;
+    }
+
+    public void uncover() 
+    {
+        isCovered = false;
+        if (isFlagged) {
+          setFlag(false);
+        }
+    }
+
+    public boolean isFlagged() 
+  {
+        return isFlagged;
+    }
+
+    public void setFlag(boolean var) 
+  {
+        isFlagged = var;
+    }
+
+    public int getAdjacentMines() 
+  {
+        return adjacentMines;
+    }
+
+    public void setAdjacentMines(int count) 
+  {
+        adjacentMines = count;
+    }
+
+    public boolean isSafe() 
+  {
+        return isSafe;
+    }
+
+    public String getDisplayValue() {
+        if (isCovered) 
+        {
+            if (isFlagged) 
+            {
+                return "F"; // Flagged cell
+            } else 
+            {
+                return " "; // Covered cell
+            }
+        } else 
+        {
+            if (isMine) 
+            {
+                return "*"; // Mine cell
+            } else if (adjacentMines > 0) 
+            {
+                return String.valueOf(adjacentMines); // Number of adjacent mines
+            } else 
+            {
+                return " "; // Empty cell with no adjacent mines
+            }
+        }
+    }
+
+}
