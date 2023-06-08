@@ -1,0 +1,22 @@
+import java.util.Scanner;
+
+
+public class Main {
+  public static void main(String[] args) 
+  {
+    Scanner input = new Scanner(System.in);
+    System.out.println("Hello and welcome to my minesweeper console-based game in java!");
+    
+    System.out.println("How many rows do you want: ");
+    int rows = input.nextInt();
+    
+    System.out.println("How many columns do you want: ");
+    int cols = input.nextInt();
+    
+    System.out.println("How many mines do you want: ");
+    int mines = input.nextInt();
+    
+    Minesweeper minesweeper = new Minesweeper(rows, cols, mines);
+    minesweeper.play();
+  }
+}
