@@ -1,0 +1,353 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class Minesweeper {
+    
+    private Cell[][] board;
+    private int rows;
+    private int cols;
+    private int numMines;
+    private int gamesDone;
+    private int numFlags;
+
+    public Minesweeper(int rows, int cols, int numMines) 
+  {
+        this.rows = rows;
+        this.cols = cols;
+        this.numMines = numMines;
+        numFlags = (rows + cols) / 2;
+        board = new Cell[rows][cols];
+        initializeBoard();
+    }
+
+    private void initializeBoard() {
+        // Initialize cells
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                board[i][j] = new Cell();
+            }
+        }
+
+        // Place mines randomly
+        Random random = new Random();
+        int count = 0;
+        while (count < numMines) {
+            int randRow = random.nextInt(rows);
+            int randCol = random.nextInt(cols);
+            if (!board[randRow][randCol].isMine()) {
+                board[randRow][randCol].setMine();
+                count++;
+            }
+        }
+
+        // Calculate adjacent mines count for each cell
+        for (int i = 0; i < rows; i++) 
+        {
+            for (int j = 0; j < cols; j++) 
+            {
+                if (!board[i][j].isMine()) 
+                {
+                    int countAdjacentMines = getAdjacentMinesCount(i, j);
+                    board[i][j].setAdjacentMines(countAdjacentMines);
+                }
+            }
+        }
+    }
+
+    private int getAdjacentMinesCount(int row, int col) 
+    {
+        int count = 0;
+        for (int i = row - 1; i <= row + 1; i++) 
+        { 
+            for (int j = col - 1; j <= col + 1; j++) 
+            {
+                if (i >= 0 && i < rows && j >= 0 && j < cols && board[i][j].isMine()) 
+                {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public void play() {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            printBoard();
+          
+            System.out.println("Would you like to unflag a square (1 for yes, 2 for no):  ");
+          
+            int num1 = scanner.nextInt();
+            if (num1 == 1) 
+            {
+              unFlagSquare();
+            }
+          
+            System.out.println("Would you like to flag a square (1 for yes, 2 for no):  ");
+            int num = scanner.nextInt();
+            if (num == 1) 
+            {
+              System.out.print("Enter row and column (e.g., 1 2): ");
+              
+              int row = scanner.nextInt();
+              int col = scanner.nextInt();
+              
+              flagSquare(row, col);
+              printBoard();
+            }
+
+            
+
+            System.out.print("Enter row and column you want to reveal (e.g., 1 2): ");
+            int row = scanner.nextInt();
+            int col = scanner.nextInt();
+
+            if (row < 0 || row >= rows || col < 0 || col >= cols) 
+            {
+                System.out.println("Invalid input. Please try again.");
+                continue;
+            }
+
+            
+
+            Cell cell = board[row][col];
+
+            
+
+            if (!cell.isCovered())
+            {
+                System.out.println("Cell already uncovered.");
+                continue;
+            }
+
+            if (cell.isFlagged()) 
+            {
+                System.out.println("Cell is marked by a flag.");
+                continue;
+            }
+
+            if (cell.isMine()) 
+            {
+                uncoverMines();
+                printBoard();
+                System.out.println("Game over! You hit a mine.");
+                break;
+            }
+
+            cell.uncover();
+
+            if (cell.getAdjacentMines() == 0)
+            {
+                uncoverAdjacentCells(row, col);
+            }
+
+            if (checkWin()) 
+            {
+                printBoard();
+                gamesDone++;
+                System.out.println("Congratulations! You won the game.");
+                break;
+            }
+        }
+
+        scanner.close();
+    }
+
+    private void printBoard() 
+  {
+        System.out.println("Minesweeper Board:");
+        System.out.print("   ");
+        for (int j = 0; j < cols; j++) 
+        {
+            System.out.print(j + " ");
+        }
+        System.out.println();
+
+        for (int i = 0; i < rows; i++) 
+        {
+            System.out.print(i + "  ");
+            for (int j = 0; j < cols; j++) 
+            {
+                Cell cell = board[i][j];
+                if (cell.isCovered() && !cell.isFlagged()) 
+                {
+                    System.out.print(" -");
+                } 
+
+                else if (cell.isFlagged()) 
+                {
+                    System.out.print(" F");
+                }
+                  
+                else if (cell.isMine()) 
+                {
+                    System.out.print(" *");
+                } 
+                
+                else if (cell.getAdjacentMines() > 0) 
+                {
+                    System.out.print(" " + cell.getAdjacentMines());
+                } 
+                
+                else 
+                {
+                    System.out.print("  ");
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    private void uncoverAdjacentCells(int row, int col) 
+  {
+        for (int i = row - 1; i <= row + 1; i++) 
+        {
+            for (int j = col - 1; j <= col + 1; j++) 
+            {
+                if (i >= 0 && i < rows && j >= 0 && j < cols) 
+                {
+                    Cell cell = board[i][j];
+                    if (cell.isCovered() && !cell.isMine()) 
+                    {
+                        cell.uncover();
+                        if (cell.getAdjacentMines() == 0) 
+                        {
+                            uncoverAdjacentCells(i, j);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void uncoverMines() 
+  {
+        for (int i = 0; i < rows; i++) 
+        {
+            for (int j = 0; j < cols; j++) 
+            {
+                if (board[i][j].isMine()) 
+                {
+                    board[i][j].uncover();
+                }
+            }
+        }
+    }
+
+    private boolean checkWin() 
+  {
+        int countUncoveredNonMines = 0;
+        int countCoveredMines = 0;
+
+        for (int i = 0; i < rows; i++) 
+        {
+            for (int j = 0; j < cols; j++) 
+            {
+                Cell cell = board[i][j];
+                if (!cell.isCovered() && !cell.isMine()) 
+                {
+                    countUncoveredNonMines++;
+                } else if (cell.isCovered() && cell.isMine()) 
+                {
+                    countCoveredMines++;
+                }
+            }
+        }
+
+        return countUncoveredNonMines == (rows * cols - numMines) && countCoveredMines == numMines;
+    }
+
+    public void flagSquare(int row, int col) 
+  {
+    Scanner input = new Scanner(System.in);
+    Cell cell = board[row][col];
+    if (cell.isCovered()) 
+    {
+      cell.setFlag(true);
+    }
+      
+    else if (cell.isFlagged()) 
+    {
+      System.out.println("Sorry, this square is already flagged. Please flag another square");
+      
+      System.out.println("What row is the cell you want to flag in: ");
+      int row1 = input.nextInt();
+      System.out.println("what column is the cell you want to flag in: ");
+      int col1 = input.nextInt();
+      
+      flagSquare(row1, col1);
+    }
+    else 
+    {
+      System.out.println("Cannot flag a uncovered cell. Please flag another square");
+      
+      System.out.println("Sorry, this square is already flagged. Please flag another square");
+      
+      System.out.println("What row is the cell you want to flag in: ");
+      int row12 = input.nextInt();
+      System.out.println("what column is the cell you want to flag in: ");
+      int col12 = input.nextInt();
+      
+      flagSquare(row12, col12);
+    }
+      
+      
+  }
+
+  public void unFlagSquare() {
+    Scanner input = new Scanner(System.in);
+
+    System.out.println("What row is the cell you want to unflag in: ");
+    int row2 = input.nextInt();
+    System.out.println("what column is the cell you want to unflag in: ");
+    int col2 = input.nextInt();
+    
+    Cell cell = board[row2][col2];
+    
+   
+    if (!cell.isFlagged()) 
+    {
+      
+      System.out.println("Sorry, that cell is not flagged. Would you like to unflag another cell (1 for yes, 2 for no): ");
+      int num = input.nextInt();
+      
+      if (num == 1) 
+      {
+        unFlagSquare();
+      }
+      
+      else
+      {
+        return;
+      }
+    }
+
+    
+    else if (!cell.isCovered() && !cell.isFlagged()) 
+    {
+      
+      System.out.println("Sorry, that cell is already uncovered. Would you like to unflag another cell (1 for yes, 2 for no): ");
+      int num = input.nextInt();
+      
+      if (num == 1) 
+      {
+        unFlagSquare();
+      }
+      
+      else  
+      {
+        return;
+      }
+    }
+
+    else 
+    {
+      board[row2][col2].setFlag(false);
+      System.out.println("You have successfullly unflagged cell " + row2 + ", " + col2);
+      printBoard();
+    }
+    
+  } 
+  
+}
